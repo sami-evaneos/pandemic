@@ -1,0 +1,4 @@
+suites:
+    domain_suite:
+        namespace: Pandemic
+        spec_path: tests
