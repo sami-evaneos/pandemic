@@ -5,9 +5,8 @@ namespace spec\Pandemic\Domain\City;
 use League\Event\GeneratorInterface;
 use Pandemic\Domain\City\City;
 use Pandemic\Domain\City\CityId;
+use Pandemic\Domain\City\Disease;
 use Pandemic\Domain\Common\Clock;
-use Pandemic\Domain\Disease\Disease;
-use Pandemic\Domain\Misc\Color;
 use PhpSpec\ObjectBehavior;
 
 class CitySpec extends ObjectBehavior
@@ -20,9 +19,9 @@ class CitySpec extends ObjectBehavior
     private $id;
 
     /**
-     * @var Color
+     * @var Disease
      */
-    private $color;
+    private $defaultDisease;
 
     /**
      * Constructor.
@@ -32,7 +31,7 @@ class CitySpec extends ObjectBehavior
     public function __construct()
     {
         $this->id = aCityId();
-        $this->color = aBlackColor();
+        $this->defaultDisease = aBlackDisease();
     }
 
     public function let()
@@ -40,7 +39,7 @@ class CitySpec extends ObjectBehavior
         $this->beConstructedWith(
             $this->id,
             self::NAME,
-            $this->color
+            $this->defaultDisease
         );
     }
 
@@ -50,54 +49,39 @@ class CitySpec extends ObjectBehavior
         $this->shouldHaveType(City::class);
     }
 
-    public function it_can_be_infected_by_one_disease(Clock $clock)
+    public function it_can_be_infected_by_its_default_disease(Clock $clock)
     {
         // Arrange
         $now = (new \tests\Service\Clock())->now();
         $clock->now()->willReturn($now);
         /** @var Disease $aDisease */
-        $aDisease = build(aDisease());
-        $aCityInfected = aCityInfected($this->id, $aDisease->id(), $now);
+        $aCityInfected = aCityInfected($this->id, $this->defaultDisease, $now);
 
         // Act
-        $this->beInfectedBy($aDisease->id(), $aDisease->color(), $clock);
+        $this->infect($clock);
 
         // Assert
         $this
             ->releaseEvents()
             ->shouldBeLike([$aCityInfected]);
-        $this
-            ->shouldThrow(\DomainException::class)
-            ->during('beInfectedBy', [
-                $aDisease->id(),
-                $aDisease->color(),
-                $clock
-            ]);
     }
 
-    public function it_can_outbreaks(Clock $clock)
+    public function it_can_outbreak_if_infected_more_than_three_times(Clock $clock)
     {
         // Arrange
         $now = (new \tests\Service\Clock())->now();
         $clock->now()->willReturn($now);
-        /** @var Disease $aDisease */
-        $aDisease = build(aDisease());
-        $aCityInfected = aCityInfected($this->id, $aDisease->id(), $now);
-        /** @var Disease $aDisease */
-        $aSecondDisease = build(aDisease());
-        $aSecondCityInfected = aCityInfected($this->id, $aSecondDisease->id(), $now);
-        /** @var Disease $aDisease */
-        $aThirdDisease = build(aDisease());
-        $aThirdCityInfected = aCityInfected($this->id, $aThirdDisease->id(), $now);
-        /** @var Disease $aDisease */
-        $aFourthDisease = build(aDisease());
-        $aCityOutbroke = aCityOutbroke($this->id, $aFourthDisease->id(), $now);
+
+        $aCityInfected = aCityInfected($this->id, $this->defaultDisease, $now);
+        $aSecondCityInfected = aCityInfected($this->id, $this->defaultDisease, $now);
+        $aThirdCityInfected = aCityInfected($this->id, $this->defaultDisease, $now);
+        $aCityOutbroke = aCityOutbroke($this->id, $this->defaultDisease, $now);
 
         // Act
-        $this->beInfectedBy($aDisease->id(), $aDisease->color(), $clock);
-        $this->beInfectedBy($aSecondDisease->id(), $aSecondDisease->color(), $clock);
-        $this->beInfectedBy($aThirdDisease->id(), $aThirdDisease->color(), $clock);
-        $this->beInfectedBy($aFourthDisease->id(), $aFourthDisease->color(), $clock);
+        $this->infect($clock);
+        $this->infect($clock);
+        $this->infect($clock);
+        $this->infect($clock); // 4th time
 
         // Assert
         $this

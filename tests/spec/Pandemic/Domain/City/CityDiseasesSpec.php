@@ -2,7 +2,6 @@
 
 namespace spec\Pandemic\Domain\City;
 
-use Pandemic\Domain\City\CityDisease;
 use Pandemic\Domain\City\CityDiseases;
 use PhpSpec\ObjectBehavior;
 
@@ -12,8 +11,8 @@ class CityDiseasesSpec extends ObjectBehavior
     {
         $this->beConstructedWith();
 
-        foreach (allColors() as $color) {
-            $this->countDiseasesForColor($color)->shouldReturn(0);
+        foreach (allDiseases() as $disease) {
+            $this->countDiseases($disease)->shouldReturn(0);
         }
     }
 
@@ -25,45 +24,32 @@ class CityDiseasesSpec extends ObjectBehavior
     public function it_adds_a_new_city_disease()
     {
         // Arrange
-        $cityId = aCityId();
-        $diseaseId = aDiseaseId();
-        $color = aRedColor();
-        $cityDisease = CityDisease::infection($cityId, $diseaseId, $color);
+        $disease = aRedDisease();
 
         // Act
-        $this->add($cityDisease)->shouldReturn($this);
+        $this->add($disease)->shouldReturn($this);
 
         // Assert
-        $this->hasDisease($diseaseId)->shouldReturn(true);
-        $this->hasDiseaseForColor($diseaseId, $color)->shouldReturn(true);
-        $this->countDiseasesForColor($color)->shouldReturn(1);
+        $this->hasDisease($disease)->shouldReturn(true);
+        $this->countDiseases($disease)->shouldReturn(1);
     }
 
     public function it_adds_different_city_diseases()
     {
         // Arrange
-        $cityId = aCityId();
-        $diseaseId = aDiseaseId();
-        $color = aRedColor();
-        $anotherCityId = aCityId();
-        $anotherDiseaseId = aDiseaseId();
-        $anotherColor = aYellowColor();
-        $cityDisease = CityDisease::infection($cityId, $diseaseId, $color);
-        $anotherCityDisease = CityDisease::infection($anotherCityId, $anotherDiseaseId, $anotherColor);
+        $redDisease = aRedDisease();
+        $yellowDisease = aYellowDisease();
 
         // Act
-        $this->add($cityDisease)
-            ->add($anotherCityDisease);
+        $this->add($redDisease)
+             ->add($yellowDisease);
 
         // Assert
-        $this->hasDisease($diseaseId)->shouldReturn(true);
-        $this->hasDiseaseForColor($diseaseId, $color)->shouldReturn(true);
-        $this->countDiseasesForColor($color)->shouldReturn(1);
+        $this->hasDisease($redDisease)->shouldReturn(true);
+        $this->countDiseases($redDisease)->shouldReturn(1);
 
-        $this->hasDisease($anotherDiseaseId)->shouldReturn(true);
-        $this->hasDiseaseForColor($anotherDiseaseId, $color)->shouldReturn(false);
-        $this->hasDiseaseForColor($anotherDiseaseId, $anotherColor)->shouldReturn(true);
-        $this->countDiseasesForColor($anotherColor)->shouldReturn(1);
-        $this->countDiseasesForColor(aBlueColor())->shouldReturn(0);
+        $this->hasDisease($yellowDisease)->shouldReturn(true);
+        $this->countDiseases($yellowDisease)->shouldReturn(1);
+        $this->countDiseases(aBlueDisease())->shouldReturn(0);
     }
 }

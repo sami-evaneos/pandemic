@@ -2,11 +2,10 @@
 
 namespace Pandemic\Domain\City;
 
+use League\Event\EventInterface;
+use League\Event\GeneratorInterface;
 use League\Event\GeneratorTrait;
 use Pandemic\Domain\Common\Clock;
-use Pandemic\Domain\Disease\DiseaseId;
-use Pandemic\Domain\Misc\Color;
-use League\Event\GeneratorInterface;
 
 /**
  * @final
@@ -29,9 +28,9 @@ final class City implements GeneratorInterface
     private $name;
 
     /**
-     * @var Color
+     * @var Disease
      */
-    private $color;
+    private $defaultDisease;
 
     /**
      * @var CityDiseases
@@ -41,72 +40,82 @@ final class City implements GeneratorInterface
     /**
      * Constructor.
      *
-     * @param  CityId $cityId
-     * @param  string $name
-     * @param  Color  $color
+     * @param  CityId  $cityId
+     * @param  string  $name
+     * @param  Disease $defaultDisease
      *
      * @return void
      */
     public function __construct(
         CityId $cityId,
         string $name,
-        Color $color
+        Disease $defaultDisease
     ) {
         $this->id = $cityId;
         $this->name = $name;
-        $this->color = $color;
+        $this->defaultDisease = $defaultDisease;
         $this->diseases = new CityDiseases();
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public function releaseEvents()
-    {
-        return $this->events;
-    }
-
-    /**
-     * @param  DiseaseId $diseaseId
-     * @param  Color     $color
-     *
-     * @return bool
-     */
-    private function couldBeInfectedBy(DiseaseId $diseaseId, Color $color) : bool
-    {
-        return !$this->diseases->hasDisease($diseaseId)
-            || !$this->diseases->hasDiseaseForColor($diseaseId, $color);
-    }
-
-    /**
-     * @param  DiseaseId $diseaseId
-     * @param  Color     $color
      * @param  Clock     $clock
      *
      * @return void
      *
      * @throws \DomainException If the city has already infected the current city.
      */
-    public function beInfectedBy(DiseaseId $diseaseId, Color $color, Clock $clock)
+    public function infect(Clock $clock): void
     {
-        if ($this->diseases->countDiseasesForColor($color) === self::MAX_INFECTION_LEVEL) {
-            $this->addEvent(new CityOutbroke($this->id, $diseaseId, $clock->now()));
+        $this->infection($this->defaultDisease, $clock->now());
+    }
+
+    /**
+     * @param Disease $disease
+     *
+     * @param \DateTimeImmutable $date
+     */
+    public function outbreakFallout(Disease $disease, \DateTimeImmutable $date): void
+    {
+        $this->infection($disease, $date);
+    }
+
+    /**
+     * @param Disease $disease
+     * @param \DateTimeImmutable $date
+     */
+    private function infection(Disease $disease, \DateTimeImmutable $date): void
+    {
+        if ($this->diseases->countDiseases($disease) === self::MAX_INFECTION_LEVEL) {
+            $this->apply(new CityOutbroke($this->id, $disease, $date));
 
             return;
         }
 
-        if (!$this->couldBeInfectedBy($diseaseId, $color)) {
-            throw new \DomainException(
-                sprintf(
-                    'City (%s) has already been infected by Disease (%s).',
-                    $this->id,
-                    $diseaseId
-                )
-            );
+        $this->apply(new CityInfected($this->id, $disease, $date));
+    }
+
+    /**
+     * @param CityInfected $event
+     */
+    private function applyCityInfected(CityInfected $event): void
+    {
+        $this->diseases->add($this->defaultDisease);
+    }
+
+    private function apply(EventInterface $event): void
+    {
+        $this->dispatchEvent($event);
+        $this->addEvent($event);
+    }
+
+    private function dispatchEvent(EventInterface $event): void
+    {
+        $className = get_class($event);
+        $splitClassName = explode('\\', $className);
+        $functionName = 'apply' . end($splitClassName);
+
+        if (method_exists($this, $functionName)) {
+            $this->{$functionName}($event);
         }
-
-        $this->diseases->add(CityDisease::infection($this->id, $diseaseId, $color));
-
-        $this->addEvent(new CityInfected($this->id, $diseaseId, $clock->now()));
     }
 }

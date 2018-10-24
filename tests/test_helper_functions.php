@@ -1,14 +1,23 @@
 <?php
 
+use Pandemic\Domain\City\CityId;
+use Pandemic\Domain\City\CityInfected;
+use Pandemic\Domain\City\CityOutbroke;
+use Pandemic\Domain\City\Disease;
+use Ramsey\Uuid\UuidFactory;
+use tests\Builder\CityBuilder;
+use tests\Builder\TestBuilder;
+use tests\Service\Clock;
+
 /**
- * @return \Ramsey\Uuid\UuidFactory
+ * @return UuidFactory
  */
-function anUuidFactory() : \Ramsey\Uuid\UuidFactory
+function anUuidFactory() : UuidFactory
 {
     static $factory;
 
     if (!$factory) {
-        $factory = new \Ramsey\Uuid\UuidFactory();
+        $factory = new UuidFactory();
     }
 
     return $factory;
@@ -19,141 +28,103 @@ function anUuidFactory() : \Ramsey\Uuid\UuidFactory
  */
 function now() : DateTimeImmutable
 {
-    return (new \tests\Service\Clock())->now();
+    return (new Clock())->now();
 }
 
 /**
- * @return \Pandemic\Domain\Misc\Color[]
+ * @return Disease[]
  */
-function allColors() : array
+function allDiseases() : array
 {
-    $colors = [];
-
-    foreach (\Pandemic\Domain\Misc\Color::AVAILABLE_COLORS as $color) {
-        $colors[] = new \Pandemic\Domain\Misc\Color($color);
-    }
-
-    return $colors;
+    return [ Disease::red(), Disease::yellow(), Disease::black(), Disease::blue() ];
 }
 
 /**
- * @return \Pandemic\Domain\Misc\Color
+ * @return Disease
  */
-function aRedColor() : \Pandemic\Domain\Misc\Color
+function aRedDisease() : Disease
 {
-    return new \Pandemic\Domain\Misc\Color(\Pandemic\Domain\Misc\Color::RED);
+    return Disease::red();
 }
 
 /**
- * @return \Pandemic\Domain\Misc\Color
+ * @return Disease
  */
-function aBlackColor() : \Pandemic\Domain\Misc\Color
+function aBlueDisease() : Disease
 {
-    return new \Pandemic\Domain\Misc\Color(\Pandemic\Domain\Misc\Color::BLACK);
+    return Disease::blue();
 }
 
 /**
- * @return \Pandemic\Domain\Misc\Color
+ * @return Disease
  */
-function aBlueColor() : \Pandemic\Domain\Misc\Color
+function aBlackDisease() : Disease
 {
-    return new \Pandemic\Domain\Misc\Color(\Pandemic\Domain\Misc\Color::BLUE);
+    return Disease::black();
 }
 
 /**
- * @return \Pandemic\Domain\Misc\Color
+ * @return Disease
  */
-function aYellowColor() : \Pandemic\Domain\Misc\Color
+function aYellowDisease() : Disease
 {
-    return new \Pandemic\Domain\Misc\Color(\Pandemic\Domain\Misc\Color::YELLOW);
+    return Disease::yellow();
 }
 
 /**
- * @return \Pandemic\Domain\Disease\DiseaseId
+ * @return CityId
  */
-function aDiseaseId() : \Pandemic\Domain\Disease\DiseaseId
+function aCityId() : CityId
 {
-    return \Pandemic\Domain\Disease\DiseaseId::fromString(anUuidFactory()->uuid4());
+    return CityId::fromUuid(anUuidFactory()->uuid4());
 }
 
 /**
- * @return \tests\Builder\DiseaseBuilder
+ * @return CityBuilder
  */
-function aDisease() : \tests\Builder\DiseaseBuilder
+function aCity() : CityBuilder
 {
-    return new \tests\Builder\DiseaseBuilder();
+    return new CityBuilder();
 }
 
 /**
- * @param  \Pandemic\Domain\Disease\DiseaseId $diseaseId
- * @param  \Pandemic\Domain\Misc\Color        $color
- * @param  DateTimeImmutable                  $occurredOn
+ * @param  CityId            $cityId
+ * @param  Disease           $disease
+ * @param  DateTimeImmutable $occurredOn
  *
- * @return \Pandemic\Domain\Disease\DiseaseDeveloped
- */
-function aDiseaseDeveloped(
-    \Pandemic\Domain\Disease\DiseaseId $diseaseId,
-    \Pandemic\Domain\Misc\Color $color,
-    \DateTimeImmutable $occurredOn
-) : \Pandemic\Domain\Disease\DiseaseDeveloped
-{
-    return new \Pandemic\Domain\Disease\DiseaseDeveloped($diseaseId, $color, $occurredOn);
-}
-
-/**
- * @return \Pandemic\Domain\City\CityId
- */
-function aCityId() : \Pandemic\Domain\City\CityId
-{
-    return \Pandemic\Domain\City\CityId::fromUuid(anUuidFactory()->uuid4());
-}
-
-/**
- * @return \tests\Builder\CityBuilder
- */
-function aCity() : \tests\Builder\CityBuilder
-{
-    return new \tests\Builder\CityBuilder();
-}
-
-/**
- * @param  \Pandemic\Domain\City\CityId       $cityId
- * @param  \Pandemic\Domain\Disease\DiseaseId $diseaseId
- * @param  DateTimeImmutable                  $occurredOn
- *
- * @return \Pandemic\Domain\City\CityOutbroke
+ * @return CityOutbroke
  */
 function aCityOutbroke(
-    \Pandemic\Domain\City\CityId $cityId,
-    \Pandemic\Domain\Disease\DiseaseId $diseaseId,
+    CityId $cityId,
+    Disease $disease,
     \DateTimeImmutable $occurredOn
-) : \Pandemic\Domain\City\CityOutbroke
+) : CityOutbroke
 {
-    return new \Pandemic\Domain\City\CityOutbroke($cityId, $diseaseId, $occurredOn);
+    return new CityOutbroke($cityId, $disease, $occurredOn);
 }
 
 /**
- * @param  \Pandemic\Domain\City\CityId       $cityId
- * @param  \Pandemic\Domain\Disease\DiseaseId $diseaseId
- * @param  DateTimeImmutable                  $occurredOn
+ * @param  CityId            $cityId
+ * @param  Disease           $disease
+ * @param  DateTimeImmutable $occurredOn
  *
- * @return \Pandemic\Domain\City\CityInfected
+ * @return CityInfected
  */
 function aCityInfected(
-    \Pandemic\Domain\City\CityId $cityId,
-    \Pandemic\Domain\Disease\DiseaseId $diseaseId,
+    CityId $cityId,
+    Disease $disease,
     \DateTimeImmutable $occurredOn
-) : \Pandemic\Domain\City\CityInfected
+) : CityInfected
 {
-    return new \Pandemic\Domain\City\CityInfected($cityId, $diseaseId, $occurredOn);
+    return new CityInfected($cityId, $disease, $occurredOn);
 }
 
 /**
- * @param  \tests\Builder\TestBuilder $aBuilder
+ * @param  TestBuilder $aBuilder
  *
  * @return mixed
  */
-function build(\tests\Builder\TestBuilder $aBuilder)
+function build(TestBuilder $aBuilder)
 {
     return $aBuilder->build();
 }

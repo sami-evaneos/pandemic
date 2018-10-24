@@ -5,7 +5,7 @@ namespace spec\Pandemic\Domain\City;
 use League\Event\AbstractEvent;
 use Pandemic\Domain\City\CityId;
 use Pandemic\Domain\City\CityOutbroke;
-use Pandemic\Domain\Disease\DiseaseId;
+use Pandemic\Domain\City\Disease;
 use PhpSpec\ObjectBehavior;
 
 class CityOutbrokeSpec extends ObjectBehavior
@@ -16,9 +16,9 @@ class CityOutbrokeSpec extends ObjectBehavior
     private $cityId;
 
     /**
-     * @var DiseaseId
+     * @var Disease
      */
-    private $diseaseId;
+    private $disease;
 
     /**
      * @var \DateTimeImmutable
@@ -33,7 +33,7 @@ class CityOutbrokeSpec extends ObjectBehavior
     public function __construct()
     {
         $this->cityId = aCityId();
-        $this->diseaseId = aDiseaseId();
+        $this->disease = aRedDisease();
         $this->occurredOn = now();
     }
 
@@ -41,7 +41,7 @@ class CityOutbrokeSpec extends ObjectBehavior
     {
         $this->beConstructedWith(
             $this->cityId,
-            $this->diseaseId,
+            $this->disease,
             $this->occurredOn
         );
     }
@@ -64,7 +64,7 @@ class CityOutbrokeSpec extends ObjectBehavior
 
     public function it_has_a_disease_id()
     {
-        $this->diseaseId()->shouldReturn($this->diseaseId);
+        $this->disease()->shouldReturn($this->disease);
     }
 
     public function it_has_an_occurred_on()

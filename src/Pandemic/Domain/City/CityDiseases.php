@@ -2,9 +2,6 @@
 
 namespace Pandemic\Domain\City;
 
-use Pandemic\Domain\Disease\DiseaseId;
-use Pandemic\Domain\Misc\Color;
-
 /**
  * @final
  * @package Pandemic\Domain\City
@@ -12,7 +9,7 @@ use Pandemic\Domain\Misc\Color;
 final class CityDiseases
 {
     /**
-     * @var array<string, CityDisease>
+     * @var array<string, int>
      */
     private $diseases;
 
@@ -23,68 +20,37 @@ final class CityDiseases
      */
     public function __construct()
     {
-        $this->diseases = array_fill_keys(Color::AVAILABLE_COLORS, []);
+        $this->diseases = array_fill_keys(Disease::AVAILABLE_DISEASES, 0);
     }
 
     /**
-     * @param  Color $diseaseColor
-     *
-     * @return null|CityDisease[]
-     */
-    private function allByColor(Color $diseaseColor) :? array
-    {
-        return $this->diseases[(string) $diseaseColor] ?? null;
-    }
-
-    /**
-     * @param  Color $color
+     * @param  Disease $disease
      *
      * @return int
      */
-    public function countDiseasesForColor(Color $color) : int
+    public function countDiseases(Disease $disease) : int
     {
-        return count($this->allByColor($color));
+        return $this->diseases[(string) $disease];
     }
 
     /**
-     * @param  DiseaseId $diseaseId
-     * @param  Color     $color
+     * @param  Disease $disease
      *
      * @return bool
      */
-    public function hasDiseaseForColor(DiseaseId $diseaseId, Color $color) : bool
+    public function hasDisease(Disease $disease) : bool
     {
-        return !empty($this->allByColor($color)[(string) $diseaseId]);
+        return $this->diseases[(string) $disease] > 0;
     }
 
     /**
-     * @param  DiseaseId $diseaseId
-     *
-     * @return bool
-     */
-    public function hasDisease(DiseaseId $diseaseId) : bool
-    {
-        /**
-         * @var string      $diseaseColor
-         * @var CityDisease $cityDisease
-         */
-        foreach ($this->diseases as $diseaseColor => $cityDisease) {
-            if (isset($cityDisease[(string) $diseaseId])) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param  CityDisease $newCityDisease
+     * @param  Disease $cityDisease
      *
      * @return CityDiseases
      */
-    public function add(CityDisease $newCityDisease) : CityDiseases
+    public function add(Disease $cityDisease) : CityDiseases
     {
-        $this->diseases[(string) $newCityDisease->color()][(string) $newCityDisease->diseaseId()] = $newCityDisease;
+        ++$this->diseases[(string) $cityDisease];
 
         return $this;
     }

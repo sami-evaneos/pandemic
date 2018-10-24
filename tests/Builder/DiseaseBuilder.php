@@ -4,7 +4,7 @@ namespace tests\Builder;
 
 use League\Event\GeneratorInterface;
 use Pandemic\Domain\Common\Clock;
-use Pandemic\Domain\Disease\Disease;
+use Pandemic\Domain\City\Disease;
 use Pandemic\Domain\Disease\DiseaseId;
 use Pandemic\Domain\Misc\Color;
 

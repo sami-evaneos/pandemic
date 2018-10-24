@@ -3,7 +3,6 @@
 namespace Pandemic\Domain\City;
 
 use League\Event\AbstractEvent;
-use Pandemic\Domain\Disease\DiseaseId;
 
 class CityInfected extends AbstractEvent
 {
@@ -15,9 +14,9 @@ class CityInfected extends AbstractEvent
     private $cityId;
 
     /**
-     * @var DiseaseId
+     * @var Disease
      */
-    private $diseaseId;
+    private $disease;
 
     /**
      * @var \DateTimeImmutable
@@ -28,22 +27,22 @@ class CityInfected extends AbstractEvent
      * Constructor.
      *
      * @param  CityId             $cityId
-     * @param  DiseaseId          $diseaseId
+     * @param  Disease            $disease
      * @param  \DateTimeImmutable $occurredOn
      *
      * @return void
      */
-    public function __construct(CityId $cityId, DiseaseId $diseaseId, \DateTimeImmutable $occurredOn)
+    public function __construct(CityId $cityId, Disease $disease, \DateTimeImmutable $occurredOn)
     {
         $this->cityId = $cityId;
-        $this->diseaseId = $diseaseId;
+        $this->disease = $disease;
         $this->occurredOn = $occurredOn;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getName()
+    public function getName() : string
     {
         return self::NAME;
     }
@@ -57,11 +56,11 @@ class CityInfected extends AbstractEvent
     }
 
     /**
-     * @return DiseaseId
+     * @return Disease
      */
-    public function diseaseId() : DiseaseId
+    public function disease() : Disease
     {
-        return $this->diseaseId;
+        return $this->disease;
     }
 
     /**
